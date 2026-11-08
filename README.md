@@ -4,6 +4,10 @@ A simple **HTML-only** notepad for Android.
 
 Made for one person who wants a calm place to write HTML — not a full IDE.
 
+## Download
+
+Grab the latest signed APK from the [Releases page](https://github.com/wized2/HtmlPad/releases/latest).
+
 ## Features
 
 - Notepad-like paper UI
