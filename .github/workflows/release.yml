@@ -83,6 +83,12 @@ jobs:
         run: |
           cp app/build/outputs/apk/release/app-release.apk "HtmlPad-v${VERSION_NAME}.apk"
 
+      - name: Keep R8 mapping file (to decode crash stack traces)
+        uses: actions/upload-artifact@v4
+        with:
+          name: mapping-v${{ env.VERSION_NAME }}
+          path: app/build/outputs/mapping/release/mapping.txt
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
