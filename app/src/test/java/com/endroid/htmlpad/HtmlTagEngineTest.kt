@@ -53,6 +53,81 @@ class HtmlTagEngineTest {
     }
 
     @Test
+    fun doesNotCloseSelfClosingTag() {
+        val before = "<div/"
+        val (text, cursor) = HtmlTagEngine.afterInsert(before, before.length, ">")
+        assertEquals("<div/>", text)
+        assertEquals(before.length + 1, cursor)
+    }
+
+    @Test
+    fun doesNotCloseWhenAttributeQuoteIsOpen() {
+        val before = "<a title=\"x"
+        val (text, _) = HtmlTagEngine.afterInsert(before, before.length, ">")
+        assertEquals("<a title=\"x>", text)
+    }
+
+    @Test
+    fun closesAfterQuotedAttributeContainingGreaterThan() {
+        val before = "<a title=\"x>y\""
+        val (text, _) = HtmlTagEngine.afterInsert(before, before.length, ">")
+        assertEquals("<a title=\"x>y\"></a>", text)
+    }
+
+    @Test
+    fun ignoresNonTagLessThan() {
+        val before = "1 <3"
+        val (text, _) = HtmlTagEngine.afterInsert(before, before.length, ">")
+        assertEquals("1 <3>", text)
+    }
+
+    @Test
+    fun ignoresTagThatWasAlreadyClosed() {
+        val before = "<p>hello"
+        val (text, _) = HtmlTagEngine.afterInsert(before, before.length, ">")
+        assertEquals("<p>hello>", text)
+    }
+
+    @Test
+    fun ignoresCommentAndDoctype() {
+        val comment = "<!-- note --"
+        assertEquals(
+            "<!-- note -->",
+            HtmlTagEngine.afterInsert(comment, comment.length, ">").first,
+        )
+        val doctype = "<!DOCTYPE html"
+        assertEquals(
+            "<!DOCTYPE html>",
+            HtmlTagEngine.afterInsert(doctype, doctype.length, ">").first,
+        )
+    }
+
+    @Test
+    fun doesNotDoubleCloseWhenClosingTagFollows() {
+        val before = "<h2"
+        val after = "</h2>"
+        val full = before + after
+        val (text, cursor) = HtmlTagEngine.afterInsert(full, before.length, ">")
+        assertEquals("<h2>$after", text)
+        assertEquals("<h2>".length, cursor)
+    }
+
+    @Test
+    fun closesInTheMiddleOfText() {
+        val full = "<section></section>\n<ul"
+        val (text, cursor) = HtmlTagEngine.afterInsert(full, full.length, ">")
+        assertEquals("<section></section>\n<ul></ul>", text)
+        assertEquals(full.length + 1, cursor)
+    }
+
+    @Test
+    fun closesCustomElement() {
+        val before = "<my-widget"
+        val (text, _) = HtmlTagEngine.afterInsert(before, before.length, ">")
+        assertEquals("<my-widget></my-widget>", text)
+    }
+
+    @Test
     fun voidHelpers() {
         assertTrue(HtmlTagEngine.isVoid("br"))
         assertTrue(HtmlTagEngine.isVoid("IMG"))
